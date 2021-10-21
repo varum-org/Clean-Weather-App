@@ -4,7 +4,6 @@ import 'package:wether_app/data/error/parse_json_exception.dart';
 import 'base_data.dart';
 
 part 'weather_data.freezed.dart';
-
 part 'weather_data.g.dart';
 
 @Freezed()
@@ -33,9 +32,7 @@ class WeatherData extends BaseData with _$WeatherData {
 
   static Future<List<WeatherData>> parseResponse(dynamic response) async {
     try {
-      return (response as List)
-          .map((json) => WeatherData.fromJson(json))
-          .toList();
+      return (response as List).map((e) => WeatherData.fromJson(e)).toList();
     } catch (e) {
       throw ParseJsonException('Unable to parse response as JSON', e);
     }

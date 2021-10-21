@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:wether_app/presentation/ui/weather/weather_screen.dart';
 
 import '../base/base_state.dart';
 import 'app_bloc.dart';
+import 'weather/weather_screen.dart';
 
 class MyApp extends StatefulWidget {
   @override
