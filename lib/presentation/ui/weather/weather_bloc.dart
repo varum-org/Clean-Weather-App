@@ -1,4 +1,5 @@
 import 'package:injectable/injectable.dart';
+import 'package:intl/intl.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../../../domain/entity/weather.dart';
@@ -13,27 +14,77 @@ class WeatherBloc extends BaseBloc {
 
   // input
   late Function(RemoteException) funcOnServerError;
-  late void Function(String) funcTimeChanged;
+  late Function(int) funcTimeChanged;
+  late Function(SwipeEvent) funcSwipeChanged;
 
   /// Output
   late Stream<String?> streamError;
-  late Stream<List<Weather>> streamGetLocationSuccess;
+  late ReplayStream<List<Weather>> streamWeather;
+  late Stream<List<MyDateTime>> streamWeeks;
 
   WeatherBloc(this._getLocationByTimeUseCase) {
-    final _timeController = BehaviorSubject.seeded('2021/10/20')
-      ..disposeBy(disposeBag);
+    // controller
     final _onServerErrorController = PublishSubject<String?>()
       ..disposeBy(disposeBag);
+    final _timeChangeController =
+        BehaviorSubject.seeded(DateTime.now().weekday - 1)
+          ..disposeBy(disposeBag);
+    final _weeksController =
+        BehaviorSubject.seeded(getListMyDates(DateTime.now(), null))
+          ..disposeBy(disposeBag);
+    final _funcSwipeChangeController = PublishSubject<SwipeEvent>()
+      ..disposeBy(disposeBag);
+    // input
     funcOnServerError = (RemoteException exception) =>
         _onServerErrorController.add(exception.exception.toString());
+    funcTimeChanged = _timeChangeController.add;
+    funcSwipeChanged = _funcSwipeChangeController.add;
+    // output
+    streamWeather = Rx.merge<int>([
+      _timeChangeController.map((position) {
+        _weeksController.add(_weeksController.value
+            .asMap()
+            .keys
+            .toList()
+            .map((index) =>
+                MyDateTime(index == position, DateTime.now().getWeeks()[index]))
+            .toList());
+        return position;
+      }),
+      _funcSwipeChangeController.map((event) {
+        _weeksController.add(getListMyDates(
+            _weeksController.value.first.date
+                .add(Duration(days: event == SwipeEvent.next ? 7 : -7)),
+            _weeksController.value.indexWhere((e) => e.selected)));
+        return _weeksController.value.indexWhere((e) => e.selected);
+      })
+    ])
+        .flatMap((event) => _getLocationByTime(
+            _weeksController.value.firstWhere((element) => element.selected)))
+        .shareReplay(maxSize: 1);
+    streamWeeks = _weeksController.stream;
     streamError = _onServerErrorController.stream;
-    funcTimeChanged = _timeController.add;
-    streamGetLocationSuccess = _timeController.stream.flatMap((time) {
-      return _getLocationByTime(_timeController.value);
-    });
   }
 
-  Stream<List<Weather>> _getLocationByTime(String time) => executeFuture(
-        _getLocationByTimeUseCase(time),
+  Stream<List<Weather>> _getLocationByTime(MyDateTime myDate) => executeFuture(
+        _getLocationByTimeUseCase(DateFormat('y/M/d').format(myDate.date)),
       );
+
+  List<MyDateTime> getListMyDates(DateTime date, int? position) => date
+      .getWeeks()
+      .asMap()
+      .keys
+      .toList()
+      .map((index) => MyDateTime(
+          index == (position ?? date.weekday - 1), date.getWeeks()[index]))
+      .toList();
+}
+
+enum SwipeEvent { next, previous }
+
+class MyDateTime {
+  late bool selected;
+  late DateTime date;
+
+  MyDateTime(this.selected, this.date);
 }
