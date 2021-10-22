@@ -2,12 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:wether_app/shared/helper/stream/dispose_bag.dart';
-import 'package:wether_app/shared/helper/stream/stream_logger.dart';
 
 import 'data/repository/source/remote/middleware/custom_log_interceptor.dart';
 import 'di/di.dart';
 import 'presentation/ui/app.dart';
+import 'shared/helper/stream/dispose_bag.dart';
+import 'shared/helper/stream/stream_logger.dart';
 
 class App {
   static run() async {

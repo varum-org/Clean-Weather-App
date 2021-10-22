@@ -1,4 +1,3 @@
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
 
@@ -56,6 +55,7 @@ mixin ErrorListenerMixin implements LocalErrorListener, RemoteErrorListener {
     context.showSnackBar(message);
   }
 
+  // ignore: unused_element
   void _showAlertDialog({
     required BuildContext context,
     required String message,

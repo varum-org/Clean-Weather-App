@@ -2,6 +2,7 @@ import 'package:injectable/injectable.dart';
 import 'package:intl/intl.dart';
 import 'package:rxdart/rxdart.dart';
 
+import '../../../domain/entity/unit.dart';
 import '../../../domain/entity/weather.dart';
 import '../../../domain/error/remote_exception.dart';
 import '../../../domain/usecase/get_location_by_time_use_case.dart';
@@ -16,6 +17,7 @@ class WeatherBloc extends BaseBloc {
   late Function(RemoteException) funcOnServerError;
   late Function(int) funcTimeChanged;
   late Function(SwipeEvent) funcSwipeChanged;
+  late Function(Unit) funcRefreshChanged;
 
   /// Output
   late Stream<String?> streamError;
@@ -34,13 +36,20 @@ class WeatherBloc extends BaseBloc {
           ..disposeBy(disposeBag);
     final _funcSwipeChangeController = PublishSubject<SwipeEvent>()
       ..disposeBy(disposeBag);
+    final _funcRefreshChangeController = PublishSubject<Unit>()
+      ..disposeBy(disposeBag);
     // input
     funcOnServerError = (RemoteException exception) =>
         _onServerErrorController.add(exception.exception.toString());
     funcTimeChanged = _timeChangeController.add;
     funcSwipeChanged = _funcSwipeChangeController.add;
+    funcRefreshChanged = _funcRefreshChangeController.add;
     // output
     streamWeather = Rx.merge<int>([
+      _funcRefreshChangeController.map((_) {
+        _weeksController.add(getListMyDates(DateTime.now(), null));
+        return (DateTime.now().weekday - 1);
+      }),
       _timeChangeController.map((position) {
         _weeksController.add(_weeksController.value
             .asMap()
