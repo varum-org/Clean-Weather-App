@@ -34,8 +34,8 @@ _i1.GetIt $initGetIt(_i1.GetIt get,
   gh.lazySingleton<_i8.WeatherRemoteDataSource>(() =>
       _i8.WeatherRemoteDataSourceImpl(
           get<_i7.WeatherService>(), get<_i5.WeatherDataMapper>()));
-  gh.lazySingleton<_i9.WeatherRepository>(() => _i10.WeatherRepositoryImpl(
-      get<_i6.WeatherLocalDataSource>(), get<_i8.WeatherRemoteDataSource>()));
+  gh.lazySingleton<_i9.WeatherRepository>(
+      () => _i10.WeatherRepositoryImpl(get<_i8.WeatherRemoteDataSource>()));
   gh.factory<_i11.GetLocationByTimeUseCase>(
       () => _i11.GetLocationByTimeUseCase(get<_i9.WeatherRepository>()));
   gh.factory<_i12.WeatherBloc>(

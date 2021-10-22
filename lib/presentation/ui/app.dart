@@ -16,6 +16,7 @@ class _AppScreenState extends BaseState<MyApp, AppBloc> {
     return ChangeNotifierProvider(
         create: (_) => bloc,
         child: MaterialApp(
+          debugShowCheckedModeBanner: false,
           theme: ThemeData(primarySwatch: Colors.blue),
           home: SafeArea(
             child: Scaffold(
